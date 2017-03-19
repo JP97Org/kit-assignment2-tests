@@ -77,7 +77,11 @@ public class MatcherTest {
   }
 
   @Ignore("Runtime_Test")
-  @Test
+  @Test(timeout = 15000)
+  /*
+   * timeout = 15000ms using cpu:
+   * Intel(R) Core(TM)2 Duo CPU     T7700  @ 2.40GHz         : 2000,00MHz
+   */
   public void matchAllMegaStresstest() {
     // tests only runtime, not result!
     for (int N = 10; N < 201; N += 10) {
@@ -91,10 +95,14 @@ public class MatcherTest {
       for (int i = -100; i < 100; i++) {
         if (i != 0) {
           deltas.add(new Delta(i, i));
+          deltas.add(new Delta(2*i, 2*i));
         }
       }
+      deltas.add(new Delta(1,0));
 
+      final long befInit = System.currentTimeMillis();
       mat = new MaximumDeltaMatcher(deltas);
+      System.out.println("Time to generate: " + (System.currentTimeMillis() - befInit));
       final long before = System.currentTimeMillis();
       mat.matchAll(board,
           toSet(new Position(N / 2, N / 2), new Position(N / 4, N / 4)));

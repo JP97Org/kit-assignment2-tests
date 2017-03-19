@@ -54,9 +54,9 @@ public class GameTest {
   public void initializeBoardAndStart() {
     //only run test, no asserts!
     System.out.println(game.getScore());
-    System.out.println(board.toTokenString());
+    bprnt(board);
     game.initializeBoardAndStart();
-    System.out.println(board.toTokenString());
+    bprnt(board);
     System.out.println(game.getScore());
   }
   
@@ -65,19 +65,19 @@ public class GameTest {
     //only run test, no asserts!
     Move moveTest = new MoveFactoryImplementation().flipDown(new Position(0,0));
     System.out.println(game.getScore());
-    System.out.println(board.toTokenString());
+    bprnt(board);
     game.initializeBoardAndStart();
     final int scoreBefore = game.getScore(); 
-    System.out.println(board.toTokenString());
+    bprnt(board);
     game.acceptMove(moveTest);
-    System.out.println(board.toTokenString());
+    bprnt(board);
     System.out.println(game.getScore() - scoreBefore);
   }
   
   @Test
   public void baseTest22() {
     //Calculate score (example 22)
-    
+    System.out.println("BaseTest22");
     Board b = new MatchThreeBoard(Token.set("AXO*"), "O*O;***;O*O;O*O");
     b.setFillingStrategy(new DeterministicStrategy(itr("AOA**"), itr("AXAXA"), itr("A**A*")));
     Matcher m = new MultiMatcher(new MaximumDeltaMatcher(toSet(Delta.dxy(1, 0))), new MaximumDeltaMatcher(toSet(Delta.dxy(0, 1))));
@@ -85,6 +85,32 @@ public class GameTest {
     g.initializeBoardAndStart();
     assertEquals(b.toTokenString(), "*A*;*XA;AA*;OX*");
     assertEquals(g.getScore(), 49);
+  }
+  
+  @Test
+  public void baseTest20() {
+    System.out.println("BaseTest20");
+    Board b = new MatchThreeBoard(Token.set("O*ABCDEFGHIJKLMNP"),"O*O;***;O*O;O*O");
+    b.setFillingStrategy(new DeterministicStrategy(itr("ABCDE"), itr("FGHIJ"), itr("KLMNP")));
+    Matcher m = new MultiMatcher(new MaximumDeltaMatcher(toSet(Delta.dxy(1, 0))), new MaximumDeltaMatcher(toSet(Delta.dxy(0, 1))));
+    Game g = new MatchThreeGame(b, m);
+    bprnt(b);
+    g.initializeBoardAndStart();
+    bprnt(b);
+    assertEquals(40,g.getScore());
+  }
+  
+  @Test
+  public void baseTest21() {
+    System.out.println("BaseTest21");
+    Board b = new MatchThreeBoard(Token.set("O*+XABCDEFGHIJKLMNPQ"),"A*A;**A;X*A;+*A");
+    b.setFillingStrategy(new DeterministicStrategy(itr("QBCDE"), itr("FGHIJ"), itr("KLMNP")));
+    Matcher m = new MultiMatcher(new MaximumDeltaMatcher(toSet(Delta.dxy(1, 0))), new MaximumDeltaMatcher(toSet(Delta.dxy(0, 1))));
+    Game g = new MatchThreeGame(b, m);
+    bprnt(b);
+    g.initializeBoardAndStart();
+    bprnt(b);
+    assertEquals(20,g.getScore());
   }
 
   private static Iterator<Token> itr(String tokenString) {
@@ -95,5 +121,9 @@ public class GameTest {
     Set<Delta> ret = new HashSet<Delta>();
     ret.add(dxy);
     return ret;
+  }
+  
+  private static void bprnt(Board board) {
+    System.out.println(PrettyPrint.prettyPrint(board));
   }
 }

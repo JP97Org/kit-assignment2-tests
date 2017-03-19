@@ -23,6 +23,7 @@ import edu.kit.informatik.matchthree.framework.interfaces.Board;
 import edu.kit.informatik.matchthree.framework.interfaces.Game;
 import edu.kit.informatik.matchthree.framework.interfaces.Matcher;
 import edu.kit.informatik.matchthree.framework.interfaces.Move;
+import edu.kit.informatik.matchthree.framework.interfaces.MoveFactory;
 
 public class GameTest {
   private Board board;
@@ -111,6 +112,96 @@ public class GameTest {
     g.initializeBoardAndStart();
     bprnt(b);
     assertEquals(20,g.getScore());
+  }
+  
+  @Test
+  public void testGameFullMatch() {
+    Board board = new MatchThreeBoard(Token.set("XY"), 3, 3);
+    for (int i = 0; i < 3; i++) {
+      for (int j = 0; j < 3; j++) {
+        board.setTokenAt(Position.at(i, j), new Token("X"));
+      }
+    }
+    assertEquals("XXX;XXX;XXX", board.toTokenString());
+    Matcher matcher = new MaximumDeltaMatcher(new HashSet<>(Arrays.asList(Delta.dxy(0, 1))));
+    board.setFillingStrategy(new NotFill());
+    Game game = new MatchThreeGame(board, matcher);
+    game.initializeBoardAndStart();
+    assertEquals("   ;   ;   ", board.toTokenString());
+    assertEquals(27, game.getScore());
+  }
+  
+  @Test
+  public void testGameTwoMatchesByMoveNotFill() {
+    Board board = new MatchThreeBoard(Token.set("XYZ"), 3, 3);
+    for (int i = 0; i < 3; i++) {
+      for (int j = 0; j < 3; j++) {
+        if ((i + j) % 2 == 0) {
+          board.setTokenAt(Position.at(i, j), new Token("X"));
+        } else {
+          board.setTokenAt(Position.at(i, j), new Token("Y"));
+        }
+      }
+    }
+    assertEquals("XYX;YXY;XYX", board.toTokenString());
+    Matcher matcher = new MaximumDeltaMatcher(new HashSet<>(Arrays.asList(Delta.dxy(0, 1))));
+    board.setFillingStrategy(new NotFill());
+    Game game = new MatchThreeGame(board, matcher);
+    game.initializeBoardAndStart();
+    assertEquals("XYX;YXY;XYX", board.toTokenString());
+    MoveFactory moveFactory = new MoveFactoryImplementation();
+    game.acceptMove(moveFactory.flipRight(Position.at(0, 1)));
+    assertEquals("  X;  Y;  X", board.toTokenString());
+    assertEquals(12, game.getScore());
+  }
+  
+  @Test
+  public void testGameTwoMatchesByMoveFillWithTwoLetters() {
+    System.out.println("TwoMatchesFillWithTwoLetters");
+    Board board = new MatchThreeBoard(Token.set("XYZA"), 3, 3);
+    for (int i = 0; i < 3; i++) {
+      for (int j = 0; j < 3; j++) {
+        if ((i + j) % 2 == 0) {
+          board.setTokenAt(Position.at(i, j), new Token("X"));
+        } else {
+          board.setTokenAt(Position.at(i, j), new Token("Y"));
+        }
+      }
+    }
+    assertEquals("XYX;YXY;XYX" , board.toTokenString());
+    bprnt(board);
+    Matcher matcher = new MaximumDeltaMatcher(new HashSet<>(Arrays.asList(Delta.dxy(0, 1))));
+    board.setFillingStrategy(new FillWithTwoLetters("Y", "A"));
+    Game game = new MatchThreeGame(board, matcher);
+    game.initializeBoardAndStart();
+    assertEquals("XYX;YXY;XYX", board.toTokenString());
+    bprnt(board);
+    MoveFactory moveFactory = new MoveFactoryImplementation();
+    game.acceptMove(moveFactory.flipRight(Position.at(0, 1)));
+    bprnt(board);
+    assertEquals("YAX;AYY;YAX", board.toTokenString());
+    assertEquals(12, game.getScore());
+  }
+
+  @Test
+  public void testGameAllMatchByStart() {
+    Board board = new MatchThreeBoard(Token.set("XY"), 3, 3);
+    for (int i = 0; i < 3; i++) {
+      for (int j = 0; j < 3; j++) {
+        if ((j % 2) == 0) {
+          board.setTokenAt(Position.at(i, j), new Token("X"));
+        } else {
+          board.setTokenAt(Position.at(i, j), new Token("Y"));
+        }
+      }
+    }
+    assertEquals("XXX;YYY;XXX", board.toTokenString());
+    Matcher matcher = new MaximumDeltaMatcher(new HashSet<>(Arrays.asList(Delta.dxy(1, 0))));
+    board.setFillingStrategy(new NotFill());
+    Game game = new MatchThreeGame(board, matcher);
+    game.initializeBoardAndStart();
+    assertEquals( "   ;   ;   ", board.toTokenString());
+    assertEquals(game.getScore(), 27);
   }
 
   private static Iterator<Token> itr(String tokenString) {
